@@ -22,5 +22,10 @@
     "@types/node": "^18.11.0",
     "@types/puppeteer": "^7.0.4",
     "rimraf": "^3.0.2"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "export/*"
+    ]
   }
 }

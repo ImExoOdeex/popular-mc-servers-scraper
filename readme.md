@@ -1,21 +1,17 @@
-# **Minecraft Server Status API**
+# **Popular Minecraft servers scraper**
 
-API to check minecraft server status.
+Why puppeteer? Because I've already used Cheerio.js and also I've also heard that puppeteer is better in scraping.
 
----
+### **How to run?**
 
-**How to use:**
+1. Install dependencies
 
-_1. Install dependencies_
+    `npm i`
 
-`npm i`
+2. Navigate to `/src/config` to check out opitional config you want to change
 
-_2. Run API_
+3. Run app in dev mode
 
-`npm start`
+    `npm run dev`
 
----
-
-**That's it!** You're ready to get all Minecraft Server Data!
-
-Licensed under X11 (MIT)
+4. Now wait the app to complete scraping and then navigate to export folder and take your ready file!

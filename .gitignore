@@ -2,4 +2,4 @@
 /package-lock.json
 /build
 .env
-export/servers.json
+export

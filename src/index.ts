@@ -12,7 +12,7 @@ async function main() {
 	let ipOnlyServers = 0;
 	let percentDone = 0;
 
-	for (let i = 1; i <= config.finalPage; i++) {
+	for (let i = config.startPage; i <= config.finalPage; i++) {
 		percentDone = (i / config.finalPage) * 100;
 		console.log(`${percentDone.toFixed(0)}% | ${i}/${config.finalPage}`);
 
@@ -24,7 +24,8 @@ async function main() {
 
 		const trs = await table?.$$("tbody tr");
 		if (!trs?.length) {
-			return console.log("unable to find `tr` in tbody");
+			console.log("No servers detected! Stopping loop!");
+			break;
 		}
 
 		for (const tr of trs) {
@@ -40,17 +41,20 @@ async function main() {
 			const strong = await button.$("strong");
 			const server: string = (await strong?.evaluate((node) => node.innerHTML)).replace(":25565", "");
 
-			let iconName = server.toLowerCase() + ".webp";
-			if (config.generateIcons) {
-				const imgTd = tds[0];
-				const image = await imgTd.$("img");
-				const imageSrc = await image?.evaluate((node) => node.getAttribute("src"));
+			let icon;
 
-				if (server.includes("Private Server")) {
-					privateServers++;
-				} else if (/^\d/.test(server)) {
-					ipOnlyServers++;
-				} else {
+			if (server.includes("Private Server")) {
+				privateServers++;
+				continue;
+			} else if (/^\d/.test(server)) {
+				ipOnlyServers++;
+				continue;
+			} else {
+				if (config.generateIcons) {
+					const imgTd = tds[0];
+					const image = await imgTd.$("img");
+					const imageSrc = await image?.evaluate((node) => node.getAttribute("src"));
+
 					if (imageSrc) {
 						const imageURL = `https://minecraft-mp.com${imageSrc}`;
 
@@ -61,18 +65,27 @@ async function main() {
 						});
 						const imageBuffer = await response?.buffer();
 
-						if (imageBuffer) {
-							if (!fs.existsSync(config.dirname)) {
-								fs.mkdirSync(config.dirname);
-								fs.mkdirSync(`./${config.dirname}/${config.faviconDirname}`);
+						if (config.iconsSaveType === "base64") {
+							if (imageBuffer) {
+								icon = "data:image/png;base64," + imageBuffer.toString("base64");
 							}
-							await fs.promises.writeFile(`./${config.dirname}/${config.faviconDirname}/${server.toLowerCase()}.webp`, imageBuffer ?? "");
+						} else {
+							if (imageBuffer) {
+								if (!fs.existsSync(config.dirname)) {
+									await fs.promises.mkdir(config.dirname);
+								}
+								if (!fs.existsSync(config.dirname + "/" + config.faviconDirname)) {
+									await fs.promises.mkdir(config.dirname + "/" + config.faviconDirname);
+								}
+								await fs.promises.writeFile(`./${config.dirname}/${config.faviconDirname}/${server.toLowerCase()}.webp`, imageBuffer ?? "");
+								icon = `${server.toLowerCase()}.webp`;
+							}
 						}
 						pageNewFavicon.close();
 					}
 				}
 
-				serverArray.push({ id: serverID, server, icon: iconName });
+				serverArray.push(config.generateIcons ? { id: serverID, server, icon } : { id: serverID, server });
 				serverID++;
 			}
 		}

@@ -41,6 +41,21 @@ async function main() {
 			const strong = await button.$("strong");
 			const server: string = (await strong?.evaluate((node) => node.innerHTML)).replace(":25565", "");
 
+			const tags: string[] = [];
+
+			if (config.generateTags) {
+				const tagsTd = tds[4];
+				const tagsByClass = await tagsTd.$$(".badge");
+				console.log("tagsByClass", tagsByClass);
+
+				tagsByClass.map(async (t) => {
+					const tag = await t.evaluate((node) => node.innerHTML);
+					console.log(tag);
+
+					tags.push(tag);
+				});
+			}
+
 			let icon;
 
 			if (server.includes("Private Server")) {
@@ -77,7 +92,10 @@ async function main() {
 								if (!fs.existsSync(config.dirname + "/" + config.faviconDirname)) {
 									await fs.promises.mkdir(config.dirname + "/" + config.faviconDirname);
 								}
-								await fs.promises.writeFile(`./${config.dirname}/${config.faviconDirname}/${server.toLowerCase()}.webp`, imageBuffer ?? "");
+								await fs.promises.writeFile(
+									`./${config.dirname}/${config.faviconDirname}/${server.toLowerCase()}.webp`,
+									imageBuffer ?? ""
+								);
 								icon = `${server.toLowerCase()}.webp`;
 							}
 						}
@@ -85,7 +103,15 @@ async function main() {
 					}
 				}
 
-				serverArray.push(config.generateIcons ? { id: serverID, server, icon } : { id: serverID, server });
+				serverArray.push(
+					config.generateIcons && config.generateTags
+						? { id: serverID, server, tags, icon }
+						: config.generateIcons
+						? { id: serverID, server, icon }
+						: config.generateTags
+						? { id: serverID, server, tags }
+						: { id: serverID, server }
+				);
 				serverID++;
 			}
 		}

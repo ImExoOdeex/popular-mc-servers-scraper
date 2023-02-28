@@ -29,8 +29,6 @@ async function main() {
 		}
 
 		for (const tr of trs) {
-			console.log(serverID);
-
 			const tds = await tr.$$("td");
 
 			const td = tds[1];
@@ -41,30 +39,18 @@ async function main() {
 			const strong = await button.$("strong");
 			const server: string = (await strong?.evaluate((node) => node.innerHTML)).replace(":25565", "");
 
-			const tags: string[] = [];
-
-			if (config.generateTags) {
-				const tagsTd = tds[4];
-				const tagsByClass = await tagsTd.$$(".badge");
-				console.log("tagsByClass", tagsByClass);
-
-				tagsByClass.map(async (t) => {
-					const tag = await t.evaluate((node) => node.innerHTML);
-					console.log(tag);
-
-					tags.push(tag);
-				});
-			}
-
-			let icon;
-
 			if (server.includes("Private Server")) {
+				console.log("Skipping / Private server");
 				privateServers++;
 				continue;
-			} else if (/^\d/.test(server)) {
+			} else if (!/[a-zA-Z]/.test(server)) {
+				console.log("Skipping / Server without domain");
 				ipOnlyServers++;
 				continue;
 			} else {
+				let tags: string[] = [];
+				let icon: string = "";
+
 				if (config.generateIcons) {
 					const imgTd = tds[0];
 					const image = await imgTd.$("img");
@@ -100,6 +86,17 @@ async function main() {
 							}
 						}
 						pageNewFavicon.close();
+					}
+				}
+				console.log(serverID, server);
+
+				if (config.generateTags) {
+					const tagsTd = tds[4];
+					const tagsByClass = await tagsTd.$$(".badge");
+
+					for (const t of tagsByClass) {
+						const tag: string = await t.evaluate((node) => node.innerHTML);
+						tags.push(tag);
 					}
 				}
 

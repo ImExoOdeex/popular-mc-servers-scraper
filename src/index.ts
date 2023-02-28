@@ -1,6 +1,9 @@
 import puppeteer from "puppeteer";
 import fs from "fs";
 import config from "./config";
+import { request } from "undici";
+const cron = require("node-cron");
+require("dotenv").config();
 
 async function main() {
 	const browser = await puppeteer.launch();
@@ -144,4 +147,20 @@ async function main() {
 	await browser.close();
 }
 
-main().catch((err) => `app crashed: ${err}`);
+cron.schedule("*/30 * * * *", async () => {
+	console.log("running a task every 30 minutes");
+	await main().catch((err) => `failed to fetch the servers\n ${err}`);
+
+	if (!process.env.URL) {
+		throw new Error("no request endpoint set!");
+	}
+	const body = fs.readFileSync(`${config.dirname}/${config.filename}.json`, { encoding: "utf8" });
+
+	const res = await request(process.env.URL, {
+		method: "POST",
+		body: body,
+		headers: [`Authorization`, process.env.SUPER_DUPER_API_ACCESS_TOKEN ?? ""]
+	});
+
+	console.log(await res.body.json());
+});

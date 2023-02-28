@@ -13,7 +13,7 @@ const config: configType = {
 	dirname: "export",
 	faviconDirname: "favicons",
 	filename: "servers",
-	finalPage: 111, // could do also infinite, cause it will stop when servers ends
+	finalPage: 120, // could do also infinite, cause it will stop when servers ends
 	startPage: 1,
 	generateIcons: true,
 	iconsSaveType: "base64",
